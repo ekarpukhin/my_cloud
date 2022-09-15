@@ -1,8 +1,8 @@
 FROM drogonframework/drogon
-ADD src .
-RUN  &&\
-    cd src/build &&\
+COPY src .
+RUN ls
+RUN cd build &&\
     cmake .. &&\
-    make \
-WORKDIR src/build
+    make
+WORKDIR build
 ENTRYPOINT ["./yashka"]
