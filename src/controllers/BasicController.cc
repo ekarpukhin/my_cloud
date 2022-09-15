@@ -130,8 +130,9 @@ void BasicController::updates(const HttpRequestPtr &req, std::function<void (con
     ret["params"] = params;
     Json::Reader reader;
     Json::Value answer_from_BE;
-    bool successParse = reader.parse(someFunction(ret.toStyledString()).c_str(), answer_from_BE);
+    bool successParse = reader.parse(updates_responseJSON(ret.toStyledString()).c_str(), answer_from_BE);
     answer_from_BE["message"] = "Updates";
+    cout << answer_from_BE << "\n";
     response_to_localhost(successParse, answer_from_BE, std::move(callback));
 }
 

@@ -385,6 +385,93 @@ string clear_responseJSON()
     return res_json.dump();
 }
 
+long long c_toi(const char s)
+/**
+ * Возвращает символ в long long
+ */
+{
+    return s - '0';
+}
 
+long long pars_date(const string& date)
+/**
+ * Превращает строку даты в long long
+ */
+{
+    long long year = c_toi(date[0])*1000 + c_toi(date[1])*100 + c_toi(date[2]) * 10 + c_toi(date[3]);
+    long long month = c_toi(date[5])*10 + c_toi(date[6]);
+    long long dd = c_toi(date[8])*10 + c_toi(date[9]);
+    long long hh = c_toi(date[11])*10 + c_toi(date[12]);
+    long long mm = c_toi(date[14])*10 + c_toi(date[15]);
+    long long ss = c_toi(date[17])*10 + c_toi(date[18]);
+    long long ms = c_toi(date[20])*100 + c_toi(date[21]) * 10 + c_toi(date[22]);
+//    return (((((year* 366 +  month) * 31 + dd) * 24 + hh) * 60 + mm) * 60 + ss) * 1000 + ms;
+    return (((((year* 1000 +  month) * 100 + dd) * 100 + hh) * 100 + mm) * 100 + ss) * 1000 + ms;
+}
+
+bool in_diapason(const string& origin_date, const string& date_date)
+/**
+ * проверяет лежит ли дата элемента в указанном диапазоне
+ */
+{
+    long long origin = pars_date(origin_date), date = pars_date(date_date);
+    return abs(origin - date) <= 100*100*100*1000;
+}
+
+json updatesChildren(const SystemItem& el)
+/**
+ * Собирает JSON на отправку с информацией о элементе
+ */
+{
+    json res;
+    res["type"] = (el.getValueOfType().empty())? "": el.getValueOfType();
+    res["id"] = el.getValueOfId();
+    if (!el.getValueOfSize().empty()) res["size"] = stoll(el.getValueOfSize());
+    else res["size"] = 0;
+    if (el.getValueOfUrl().empty()) res["url"] = nullptr;
+    else res["url"] = el.getValueOfUrl();
+    if (el.getValueOfParentid().empty()) res["parentId"] = nullptr;
+    else res["parentId"] = el.getValueOfParentid();
+    res["date"] = (el.getValueOfDate().empty())? "": el.getValueOfDate();
+    return res;
+}
+
+int nodesUpdates(const string& date, json& answer)
+/**
+     * Рекурсивный спуск по папкам и файлам с сбором информации о них в JSON
+     * Находит все корневые папки и идет вниз по тем кто
+     */
+{
+    if (date.empty() || !validDate(date)) return 400;
+    auto dbClientPtr = drogon::app().getDbClient();
+    Mapper<SystemItem> mp(dbClientPtr);
+    json res;
+    auto elements = mp.findAll();
+    for (const auto& el: elements) {
+        if (in_diapason(date, el.getValueOfDate())) {
+            res.push_back(updatesChildren(el));
+        }
+    }
+    answer["answer"] = res;
+    return 200;
+}
+
+string updates_responseJSON(const string& reqJSON_str)
+/**
+     * Запускает процессы последовательного выявления элементов измененных за последние 24 часа
+     * Принимает  JSON в формате строки от контроллера
+     * Распаршивает его и отсылает на проверку
+     * Возвращает JSON строку с кодом ответа и JSON с измененными за последние 24 часа элементами
+     * {
+     *  "status": 200,
+     *  "answer": {...JSON...}
+     * } - все прошло успешно
+     */
+{
+    json answer, reqJSON = json::parse(reqJSON_str);
+    answer["status"] = nodesUpdates(reqJSON.value("params", "params"), answer);
+    cout << answer["status"] << "\n";
+    return answer.dump();
+}
 
 #endif //YASHKA_VALIDJSON_H
