@@ -9,4 +9,4 @@ Enjoy! \
 If you need to clear database, send /clear. \
 If you need to stop server, send /stop (it will reload automatically). \
 \
-P.S. Collab with https://github.com/Kostyak7 
+P.S. Colab with https://github.com/Kostyak7 
