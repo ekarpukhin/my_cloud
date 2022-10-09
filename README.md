@@ -1,8 +1,8 @@
 Simple Cloud Storage. \
-Request: \
-- /imports: send array of jsons with file/folder info, POST \
-- /nodes{id}: return json of file/folder, GET \
-- /delete{id}: delete file/folder, DELETE \
+Request: 
+- /imports: send array of jsons with file/folder info, POST 
+- /nodes{id}: return json of file/folder, GET 
+- /delete{id}: delete file/folder, DELETE 
 
 Deploy with installed docker: \
   git clone https://github.com/ekarpukhin/my_cloud \
